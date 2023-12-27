@@ -30,23 +30,7 @@ jobs:
     - name: Run WPScan
       run: |
         docker pull wpscanteam/wpscan
-        docker run --network dvwp_default wpscanteam/wpscan wpscan --url http://wordpress/ --force --output wpscan-output.json
-        docker cp $(docker ps -aqf "ancestor=wpscanteam/wpscan"):wpscan-output.json .
-
-    - name: Install AWS CLI
-      run: sudo apt-get install awscli
-
-    - name: Assume AWS Role and Upload Output to S3
-      env:
-        AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
-        AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      run: |
-        TEMP_ROLE=$(aws sts assume-role --role-arn $AWS_ROLE_ARN --role-session-name github-actions)
-        AWS_ACCESS_KEY_ID=$(echo $TEMP_ROLE | jq -r .Credentials.AccessKeyId)
-        AWS_SECRET_ACCESS_KEY=$(echo $TEMP_ROLE | jq -r .Credentials.SecretAccessKey)
-        AWS_SESSION_TOKEN=$(echo $TEMP_ROLE | jq -r .Credentials.SessionToken)
-        aws s3 cp wpscan-output.json s3://wpscan-output-staging/
-
+        docker run --network dvwp_default wpscanteam/wpscan wpscan --url http://wordpress/ --force 
     - name: Cleanup Docker Compose Services
       run: docker-compose down
 
